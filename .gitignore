@@ -12,6 +12,9 @@ rankings_verify.xlsx
 RankingBest.xlsx
 scraper.log
 
+# 本地快取（依機器不同，不上傳）
+report_cache.json
+
 # 系統檔
 .DS_Store
 Thumbs.db
