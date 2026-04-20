@@ -193,15 +193,17 @@ function setView(v) {
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 async function loadView() {
-  const need = currentView === 'best' ? 'bestData' : 'allData';
-  if (window[need]) { render(); return; }
+  const isBest = currentView === 'best';
+  if (isBest ? bestData : allData) { render(); return; }
 
   showLoading();
-  const file = currentView === 'best' ? 'data_best.json' : 'data_all.json';
+  const file = isBest ? 'data_best.json' : 'data_all.json';
   try {
     const res = await fetch(file);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    window[need] = await res.json();
+    const data = await res.json();
+    if (isBest) bestData = data;
+    else        allData  = data;
     render();
   } catch(e) {
     showError(`無法載入 ${file}：${e.message}`);
