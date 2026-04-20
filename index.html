@@ -20,202 +20,84 @@
       --dps-bg:    rgba(200,60,60,0.08);
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-      min-height: 100vh;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; min-height: 100vh; }
 
-    /* ── Header ── */
+    /* Header */
     header {
       background: linear-gradient(135deg, #0a0a18, #1a1535);
       border-bottom: 1px solid var(--gold-dim);
       padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
     }
-    .header-left h1 {
-      font-size: 1.4rem;
-      color: var(--gold);
-      letter-spacing: 1px;
-    }
-    .header-left p {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      margin-top: 2px;
-    }
+    .header-left h1 { font-size: 1.4rem; color: var(--gold); letter-spacing: 1px; }
+    .header-left p  { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
     .donate-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      display: inline-flex; align-items: center; gap: 6px;
       background: linear-gradient(135deg, #8b1a1a, #c0392b);
-      color: #fff;
-      text-decoration: none;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      transition: opacity .2s;
+      color: #fff; text-decoration: none; padding: 8px 18px;
+      border-radius: 20px; font-size: 0.85rem; font-weight: 600; letter-spacing: .5px; transition: opacity .2s;
     }
     .donate-btn:hover { opacity: .85; }
 
-    /* ── Boss tabs ── */
+    /* Boss tabs */
     .boss-tabs {
-      display: flex;
-      gap: 4px;
-      padding: 16px 24px 0;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
+      display: flex; gap: 4px; padding: 16px 24px 0;
+      border-bottom: 1px solid var(--border); overflow-x: auto;
     }
     .boss-tab {
-      padding: 9px 20px;
-      border: 1px solid var(--border);
-      border-bottom: none;
-      border-radius: 6px 6px 0 0;
-      background: var(--surface);
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 0.88rem;
-      white-space: nowrap;
-      transition: all .2s;
+      padding: 9px 20px; border: 1px solid var(--border); border-bottom: none;
+      border-radius: 6px 6px 0 0; background: var(--surface); color: var(--text-dim);
+      cursor: pointer; font-size: .88rem; white-space: nowrap; transition: all .2s;
     }
     .boss-tab:hover { color: var(--text); border-color: var(--gold-dim); }
-    .boss-tab.active {
-      background: #1e1e38;
-      color: var(--gold);
-      border-color: var(--gold-dim);
-      border-bottom-color: #1e1e38;
-    }
+    .boss-tab.active { background: #1e1e38; color: var(--gold); border-color: var(--gold-dim); border-bottom-color: #1e1e38; }
 
-    /* ── View toggle ── */
+    /* Toolbar */
     .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 24px;
-      background: #1e1e38;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 12px; padding: 14px 24px;
+      background: #1e1e38; border-bottom: 1px solid var(--border); flex-wrap: wrap;
     }
-    .view-toggle {
-      display: flex;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-    }
+    .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
     .view-btn {
-      padding: 6px 16px;
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 0.82rem;
-      transition: all .15s;
+      padding: 6px 16px; background: transparent; border: none;
+      color: var(--text-dim); cursor: pointer; font-size: .82rem; transition: all .15s;
     }
     .view-btn + .view-btn { border-left: 1px solid var(--border); }
     .view-btn.active { background: var(--gold); color: #000; font-weight: 700; }
-    .toolbar-info { font-size: 0.78rem; color: var(--text-dim); margin-left: auto; }
+    .toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .updated-info { font-size: .75rem; color: var(--text-dim); }
+    .count-info   { font-size: .78rem; color: var(--text-dim); }
 
-    /* ── Table container ── */
-    .table-wrap {
-      padding: 20px 24px;
-      overflow-x: auto;
-    }
-    .role-section { margin-bottom: 28px; }
-    .role-header {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      padding: 6px 10px;
-      margin-bottom: 8px;
-      border-left: 3px solid var(--gold-dim);
-    }
+    /* Table */
+    .table-wrap { padding: 20px 24px; overflow-x: auto; }
+    .role-section { margin-bottom: 28px; background: var(--role-bg,transparent); border-radius: 8px; padding: 14px 16px; }
+    .role-header { font-size: .78rem; font-weight: 700; letter-spacing: 2px; color: var(--text-dim); padding: 4px 10px; margin-bottom: 10px; border-left: 3px solid var(--gold-dim); }
+    .job-group { margin-bottom: 16px; }
+    .job-label { font-size: .78rem; font-weight: 700; padding: 4px 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-      min-width: 560px;
-    }
-    th {
-      background: #1a1a32;
-      color: var(--gold);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: .5px;
-      text-align: left;
-      padding: 9px 12px;
-      border-bottom: 1px solid var(--gold-dim);
-      white-space: nowrap;
-    }
-    td {
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 520px; }
+    th { background: #1a1a32; color: var(--gold); font-size: .75rem; font-weight: 600; letter-spacing: .5px; text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--gold-dim); white-space: nowrap; }
+    td { padding: 7px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.03); }
+    tr:hover td { background: rgba(255,255,255,.03); }
 
-    .rank-badge {
-      display: inline-block;
-      min-width: 26px;
-      text-align: center;
-      font-weight: 700;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-    .rank-badge.top1 { color: #FFD700; }
-    .rank-badge.top2 { color: #C0C0C0; }
-    .rank-badge.top3 { color: #CD7F32; }
+    .rank-badge { display: inline-block; min-width: 26px; text-align: center; font-weight: 700; font-size: .8rem; color: var(--text-dim); }
+    .rank-badge.r1 { color: #FFD700; }
+    .rank-badge.r2 { color: #C0C0C0; }
+    .rank-badge.r3 { color: #CD7F32; }
+    .job-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .num { font-family: 'Consolas',monospace; }
+    .rdps { color: var(--gold); font-weight: 600; }
+    .dim  { color: var(--text-dim); font-size: .8rem; }
 
-    .job-dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      margin-right: 7px;
-      vertical-align: middle;
-      flex-shrink: 0;
-    }
-    .job-cell { display: flex; align-items: center; }
-    .player-name { font-weight: 500; }
-    .dps-val { font-family: 'Consolas', monospace; color: #ccc; }
-    .rdps-val { font-family: 'Consolas', monospace; color: var(--gold); font-weight: 600; }
-    .adps-val { font-family: 'Consolas', monospace; color: #aaa; }
-    .dur-val { color: var(--text-dim); font-size: 0.8rem; }
-
-    /* ── Loading / Error ── */
-    .status-box {
-      padding: 60px 24px;
-      text-align: center;
-      color: var(--text-dim);
-    }
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-      margin: 0 auto 16px;
-    }
+    /* Status */
+    .status-box { padding: 60px 24px; text-align: center; color: var(--text-dim); }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .error-msg { color: #e87b7b; }
+    .err { color: #e87b7b; }
 
-    /* ── Footer ── */
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      border-top: 1px solid var(--border);
-      margin-top: 20px;
-    }
+    footer { text-align: center; padding: 20px; font-size: .75rem; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 20px; }
+    footer a { color: var(--gold-dim); }
   </style>
 </head>
 <body>
@@ -226,9 +108,7 @@
     <p>Arcadion (AAC Light-Heavyweight) · Zone 62 · 僅含TC伺服器擊殺紀錄</p>
   </div>
   <!-- 將 href 換成你的 Donate 連結 -->
-  <a class="donate-btn" href="#" target="_blank" rel="noopener">
-    ❤ Donate
-  </a>
+  <a class="donate-btn" href="#" target="_blank" rel="noopener">❤ Donate</a>
 </header>
 
 <div class="boss-tabs" id="bossTabs"></div>
@@ -236,9 +116,12 @@
 <div class="toolbar">
   <div class="view-toggle">
     <button class="view-btn active" id="btnBest" onclick="setView('best')">最佳排名</button>
-    <button class="view-btn" id="btnAll"  onclick="setView('all')">全場次</button>
+    <button class="view-btn"        id="btnAll"  onclick="setView('all')">全場次</button>
   </div>
-  <span class="toolbar-info" id="toolbarInfo"></span>
+  <div class="toolbar-right">
+    <span class="count-info"   id="countInfo"></span>
+    <span class="updated-info" id="updatedInfo"></span>
+  </div>
 </div>
 
 <div class="table-wrap" id="tableWrap">
@@ -246,20 +129,23 @@
 </div>
 
 <footer>
-  資料來源：<a href="https://www.fflogs.com" target="_blank" rel="noopener" style="color:var(--gold-dim)">FFLogs</a>
+  資料來源：<a href="https://www.fflogs.com" target="_blank" rel="noopener">FFLogs</a>
   &nbsp;·&nbsp; 僅供參考，非官方排名
 </footer>
 
 <script>
-// ── 設定 ──────────────────────────────────────────────────────────────────────
-const SHEET_ID = '1Z1BKfWUo8KgjCZDA5jQ4d3qLoU4hxRFgir9YuZdhUi4';
-
 const BOSSES = [
-  { label: 'Black Cat',      best: 'Black Cat(最佳)',       all: 'Black Cat' },
-  { label: 'Honey B. Lovely',best: 'Honey B Lovely(最佳)', all: 'Honey B Lovely' },
-  { label: 'Brute Bomber',   best: 'Brute Bomber(最佳)',    all: 'Brute Bomber' },
-  { label: 'Wicked Thunder', best: 'Wicked Thunder(最佳)',  all: 'Wicked Thunder' },
+  'Black Cat Savage',
+  'Honey B. Lovely Savage',
+  'Brute Bomber Savage',
+  'Wicked Thunder Savage',
 ];
+const BOSS_LABELS = {
+  'Black Cat Savage':       'Black Cat',
+  'Honey B. Lovely Savage': 'Honey B. Lovely',
+  'Brute Bomber Savage':    'Brute Bomber',
+  'Wicked Thunder Savage':  'Wicked Thunder',
+};
 
 const JOB_COLORS = {
   Astrologian:'#FFE74A', Bard:'#91BA5E', BlackMage:'#A579D6',
@@ -274,116 +160,89 @@ const JOB_COLORS = {
 const TANKS   = new Set(['Paladin','Warrior','DarkKnight','Gunbreaker']);
 const HEALERS = new Set(['WhiteMage','Scholar','Astrologian','Sage']);
 const roleOf  = j => TANKS.has(j) ? 'TANK' : HEALERS.has(j) ? 'HEALER' : 'DPS';
-const roleOrder = { TANK:0, HEALER:1, DPS:2 };
 
-// ── State ──────────────────────────────────────────────────────────────────
 let currentBoss = 0;
-let currentView = 'best';   // 'best' | 'all'
-const cache = {};            // key → parsed rows[]
+let currentView = 'best';
+let bestData = null;   // { updated, bosses }
+let allData  = null;
 
-// ── Init tabs ──────────────────────────────────────────────────────────────
-(function initTabs() {
+// ── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
   const tabs = document.getElementById('bossTabs');
   BOSSES.forEach((b, i) => {
     const btn = document.createElement('button');
     btn.className = 'boss-tab' + (i === 0 ? ' active' : '');
-    btn.textContent = b.label;
+    btn.textContent = BOSS_LABELS[b];
     btn.onclick = () => selectBoss(i);
     tabs.appendChild(btn);
   });
-  loadCurrent();
+  loadView();
 })();
 
-// ── Public actions ─────────────────────────────────────────────────────────
-function selectBoss(idx) {
-  currentBoss = idx;
-  document.querySelectorAll('.boss-tab').forEach((t,i) =>
-    t.classList.toggle('active', i === idx));
-  loadCurrent();
+function selectBoss(i) {
+  currentBoss = i;
+  document.querySelectorAll('.boss-tab').forEach((t, j) => t.classList.toggle('active', i === j));
+  render();
 }
 function setView(v) {
   currentView = v;
   document.getElementById('btnBest').classList.toggle('active', v === 'best');
-  document.getElementById('btnAll').classList.toggle('active', v === 'all');
-  loadCurrent();
+  document.getElementById('btnAll') .classList.toggle('active', v === 'all');
+  loadView();
 }
 
-// ── 用 JSONP 讀取 Google Sheet（繞過 CORS，本機開檔案也能用） ────────────
-function fetchSheet(sheetName) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_gviz_' + Math.random().toString(36).slice(2);
-    const script = document.createElement('script');
-    const timer  = setTimeout(() => {
-      cleanup(); reject(new Error('請求逾時'));
-    }, 15000);
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      script.remove();
-    }
-
-    window[cbName] = function(data) {
-      cleanup();
-      try {
-        const cols = data.table.cols.map(c => c.label);
-        const rows = (data.table.rows || []).map(row => {
-          const obj = {};
-          (row.c || []).forEach((cell, i) => {
-            obj[cols[i]] = (cell && cell.v != null) ? String(cell.v) : '';
-          });
-          return obj;
-        });
-        resolve(rows);
-      } catch(e) { reject(e); }
-    };
-
-    script.onerror = () => { cleanup(); reject(new Error('網路錯誤，請確認 Google Sheet 已設為公開')); };
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-                 `?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&callback=${cbName}`;
-    document.head.appendChild(script);
-  });
-}
-
-// ── Load & render ──────────────────────────────────────────────────────────
-async function loadCurrent() {
-  const boss     = BOSSES[currentBoss];
-  const sheet    = currentView === 'best' ? boss.best : boss.all;
-  const cacheKey = sheet;
-
-  if (cache[cacheKey]) { render(cache[cacheKey]); return; }
+// ── Load ─────────────────────────────────────────────────────────────────────
+async function loadView() {
+  const need = currentView === 'best' ? 'bestData' : 'allData';
+  if (window[need]) { render(); return; }
 
   showLoading();
+  const file = currentView === 'best' ? 'data_best.json' : 'data_all.json';
   try {
-    const rows = await fetchSheet(sheet);
-    cache[cacheKey] = rows;
-    render(rows);
+    const res = await fetch(file);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    window[need] = await res.json();
+    render();
   } catch(e) {
-    showError(e.message);
+    showError(`無法載入 ${file}：${e.message}`);
   }
 }
 
-// ── Render ─────────────────────────────────────────────────────────────────
-function render(rows) {
-  const wrap = document.getElementById('tableWrap');
-  const info = document.getElementById('toolbarInfo');
-  info.textContent = `共 ${rows.length} 筆`;
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const src    = currentView === 'best' ? bestData : allData;
+  if (!src) return;
+  const boss   = BOSSES[currentBoss];
+  const rows   = src.bosses[boss] || [];
 
-  if (!rows.length) { wrap.innerHTML = '<div class="status-box">此分頁暫無資料</div>'; return; }
+  document.getElementById('updatedInfo').textContent = `更新時間：${src.updated}`;
+  document.getElementById('countInfo').textContent   = `共 ${rows.length} 筆`;
 
-  const isBest = currentView === 'best';
-  wrap.innerHTML = isBest ? renderBest(rows) : renderAll(rows);
+  if (!rows.length) {
+    document.getElementById('tableWrap').innerHTML = '<div class="status-box">此副本暫無資料</div>';
+    return;
+  }
+  document.getElementById('tableWrap').innerHTML =
+    currentView === 'best' ? renderBest(rows) : renderAll(rows);
 }
 
+function badge(n) {
+  return `<span class="rank-badge${n===1?' r1':n===2?' r2':n===3?' r3':''}">#${n}</span>`;
+}
+function dot(job) {
+  const c = JOB_COLORS[job] || '#aaa';
+  return `<span class="job-dot" style="background:${c}"></span>`;
+}
+function num(v, cls='num') { return `<span class="${cls}">${parseFloat(v).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})}</span>`; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function renderBest(rows) {
-  // 依 role → job → 同職業排名 分組
-  const groups = {};
+  // Group by role then job
+  const groups = { TANK:{}, HEALER:{}, DPS:{} };
   rows.forEach(r => {
     const role = roleOf(r['職業']);
-    if (!groups[role]) groups[role] = {};
-    const job = r['職業'];
-    if (!groups[role][job]) groups[role][job] = [];
-    groups[role][job].push(r);
+    if (!groups[role][r['職業']]) groups[role][r['職業']] = [];
+    groups[role][r['職業']].push(r);
   });
 
   const roleMeta = {
@@ -392,37 +251,31 @@ function renderBest(rows) {
     DPS:    { label:'⚔ 輸出 DPS',    bg:'var(--dps-bg)'  },
   };
 
-  return ['TANK','HEALER','DPS'].filter(r => groups[r]).map(role => {
+  return ['TANK','HEALER','DPS'].filter(r => Object.keys(groups[r]).length).map(role => {
     const meta = roleMeta[role];
-    const jobsHtml = Object.entries(groups[role]).sort(([a],[b]) => a.localeCompare(b)).map(([job, jrows]) => {
-      const color = JOB_COLORS[job] || '#aaa';
-      const rowsHtml = jrows.map(r => {
-        const rk = +r['同職業排名'];
-        const badge = `<span class="rank-badge${rk===1?' top1':rk===2?' top2':rk===3?' top3':''}">#${rk}</span>`;
-        return `<tr>
-          <td>${badge}</td>
-          <td><span class="player-name" style="color:${color}">${esc(r['玩家名稱'])}</span></td>
-          <td class="dps-val">${fmt(r['DPS'])}</td>
-          <td class="rdps-val">${fmt(r['rDPS'])}</td>
-          <td class="adps-val">${fmt(r['aDPS'])}</td>
-          <td class="dur-val">${r['戰鬥時長(秒)']}s</td>
-        </tr>`;
+    const jobsHtml = Object.entries(groups[role])
+      .sort(([a],[b]) => a.localeCompare(b))
+      .map(([job, jrows]) => {
+        const color = JOB_COLORS[job] || '#aaa';
+        const rowsHtml = jrows.map(r =>
+          `<tr>
+            <td>${badge(+r['同職業排名'])}</td>
+            <td style="color:${color};font-weight:500">${esc(r['玩家名稱'])}</td>
+            <td>${num(r['DPS'])}</td>
+            <td>${num(r['rDPS'],'num rdps')}</td>
+            <td>${num(r['aDPS'])}</td>
+            <td class="dim">${r['戰鬥時長(秒)']}s</td>
+          </tr>`
+        ).join('');
+        return `<div class="job-group">
+          <div class="job-label" style="color:${color}">${dot(job)}${job}</div>
+          <table>
+            <thead><tr><th>排名</th><th>玩家名稱</th><th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>`;
       }).join('');
-      return `<div style="margin-bottom:16px">
-        <div style="font-size:.78rem;color:${color};font-weight:700;padding:4px 10px;margin-bottom:4px">
-          <span class="job-dot" style="background:${color}"></span>${job}
-        </div>
-        <table>
-          <thead><tr>
-            <th style="width:50px">排名</th><th>玩家名稱</th>
-            <th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>
-          </tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>`;
-    }).join('');
-
-    return `<div class="role-section" style="background:${meta.bg};border-radius:8px;padding:14px 16px">
+    return `<div class="role-section" style="--role-bg:${meta.bg}">
       <div class="role-header">${meta.label}</div>
       ${jobsHtml}
     </div>`;
@@ -430,48 +283,31 @@ function renderBest(rows) {
 }
 
 function renderAll(rows) {
-  const isRanked = '排名' in rows[0];
-  const rankCol  = isRanked ? '排名' : '同職業排名';
   const rowsHtml = rows.map(r => {
-    const job   = r['職業'];
-    const color = JOB_COLORS[job] || '#aaa';
-    const rk    = +r[rankCol];
-    const badge = `<span class="rank-badge${rk===1?' top1':rk===2?' top2':rk===3?' top3':''}">#${rk}</span>`;
+    const job = r['職業'], color = JOB_COLORS[job] || '#aaa';
+    const rk  = +(r['排名'] ?? r['同職業排名'] ?? 0);
     return `<tr>
-      <td>${badge}</td>
-      <td><div class="job-cell"><span class="job-dot" style="background:${color}"></span>${esc(job)}</div></td>
-      <td><span class="player-name">${esc(r['玩家名稱'])}</span></td>
-      <td class="dps-val">${fmt(r['DPS'])}</td>
-      <td class="rdps-val">${fmt(r['rDPS'])}</td>
-      <td class="adps-val">${fmt(r['aDPS'])}</td>
-      <td class="dur-val">${r['戰鬥時長(秒)']}s</td>
+      <td>${badge(rk)}</td>
+      <td>${dot(job)}<span style="color:${color}">${esc(job)}</span></td>
+      <td>${esc(r['玩家名稱'])}</td>
+      <td>${num(r['DPS'])}</td>
+      <td>${num(r['rDPS'],'num rdps')}</td>
+      <td>${num(r['aDPS'])}</td>
+      <td class="dim">${r['戰鬥時長(秒)']}s</td>
     </tr>`;
   }).join('');
   return `<table>
-    <thead><tr>
-      <th>排名</th><th>職業</th><th>玩家名稱</th>
-      <th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>
-    </tr></thead>
+    <thead><tr><th>排名</th><th>職業</th><th>玩家名稱</th><th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th></tr></thead>
     <tbody>${rowsHtml}</tbody>
   </table>`;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function fmt(v) {
-  const n = parseFloat(v);
-  return isNaN(n) ? v : n.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1});
-}
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
 function showLoading() {
-  document.getElementById('tableWrap').innerHTML =
-    '<div class="status-box"><div class="spinner"></div>載入中...</div>';
-  document.getElementById('toolbarInfo').textContent = '';
+  document.getElementById('tableWrap').innerHTML = '<div class="status-box"><div class="spinner"></div>載入中...</div>';
+  document.getElementById('countInfo').textContent = '';
 }
 function showError(msg) {
-  document.getElementById('tableWrap').innerHTML =
-    `<div class="status-box error-msg">⚠ ${esc(msg)}</div>`;
+  document.getElementById('tableWrap').innerHTML = `<div class="status-box err">⚠ ${esc(msg)}</div>`;
 }
 </script>
 </body>
