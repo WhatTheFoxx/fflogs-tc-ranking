@@ -145,7 +145,7 @@ const JOB_COLORS = {
   Monk:'#D69C00',       Ninja:'#AF1964',  Paladin:'#A8D2E6',
   Pictomancer:'#FD97C7',Reaper:'#965A80', RedMage:'#E87B7B',
   Sage:'#80A0F0',       Samurai:'#E46D04',Scholar:'#8657FF',
-  Summoner:'#2D9B78',   Viper:'#C8A83C',  Warrior:'#CF2621',
+  Summoner:'#2D9B78',   Viper:'#2D6A4F',  Warrior:'#CF2621',
   WhiteMage:'#FFF0DC',
 };
 
@@ -194,9 +194,8 @@ function buildJobPills() {
     (bestData.bosses[b] || []).forEach(r => allJobs.add(r['職業']));
   });
 
-  // 依 JOB_ORDER 排序，沒在清單的補到最後
-  const sorted = JOB_ORDER.filter(j => allJobs.has(j));
-  [...allJobs].forEach(j => { if (!sorted.includes(j)) sorted.push(j); });
+  // 英文字母排序
+  const sorted = [...allJobs].sort((a, b) => a.localeCompare(b));
 
   const pills = document.getElementById('jobPills');
   pills.innerHTML = '';
