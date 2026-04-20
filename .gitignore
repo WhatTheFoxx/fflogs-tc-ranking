@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 環境設定（含 API 金鑰，不上傳）
+.env
+
+# 每日抓取結果（資料量大，不放 git）
+rankings_pw_*.xlsx
+rankings_verify.xlsx
+RankingBest.xlsx
+scraper.log
+
+# 系統檔
+.DS_Store
+Thumbs.db
