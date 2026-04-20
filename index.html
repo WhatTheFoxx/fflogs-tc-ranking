@@ -56,18 +56,31 @@
     }
     .toolbar-label { font-size: .78rem; color: var(--text-dim); white-space: nowrap; }
 
-    /* Job selector */
-    .job-pills { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+    /* Role group + Job selector */
+    .selector-wrap { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .role-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+    .role-pill {
+      padding: 5px 16px; border-radius: 20px; border: 1px solid var(--border);
+      cursor: pointer; font-size: .8rem; font-weight: 700;
+      background: rgba(255,255,255,.04); color: var(--text-dim);
+      transition: all .15s; white-space: nowrap; letter-spacing: .3px;
+    }
+    .role-pill:hover { background: rgba(255,255,255,.1); }
+    .role-pill.active { background: rgba(255,255,255,.15); border-color: currentColor; }
+
+    .divider { height: 1px; background: var(--border); }
+
+    .job-pills { display: flex; flex-wrap: wrap; gap: 5px; }
     .job-pill {
-      padding: 5px 14px; border-radius: 20px; border: 1px solid transparent;
-      cursor: pointer; font-size: .8rem; font-weight: 600;
-      background: rgba(255,255,255,.05); color: var(--text-dim);
+      padding: 4px 12px; border-radius: 20px; border: 1px solid transparent;
+      cursor: pointer; font-size: .78rem; font-weight: 600;
+      background: rgba(255,255,255,.04); color: var(--text-dim);
       transition: all .15s; white-space: nowrap;
     }
     .job-pill:hover { background: rgba(255,255,255,.1); color: var(--text); }
     .job-pill.active { border-color: currentColor; background: rgba(255,255,255,.12); }
 
-    .toolbar-right { margin-left: auto; font-size: .75rem; color: var(--text-dim); white-space: nowrap; }
+    .toolbar-right { margin-left: auto; font-size: .75rem; color: var(--text-dim); white-space: nowrap; align-self: flex-start; }
 
     /* Table */
     .table-wrap { padding: 20px 24px; overflow-x: auto; }
@@ -111,7 +124,11 @@
 
 <div class="toolbar">
   <span class="toolbar-label">職業</span>
-  <div class="job-pills" id="jobPills"></div>
+  <div class="selector-wrap">
+    <div class="role-pills" id="rolePills"></div>
+    <div class="divider"></div>
+    <div class="job-pills" id="jobPills"></div>
+  </div>
   <div class="toolbar-right" id="toolbarRight"></div>
 </div>
 
@@ -138,6 +155,22 @@ const BOSS_LABELS = {
   'Wicked Thunder Savage':  'Wicked Thunder',
 };
 
+const ROLE_GROUPS = {
+  'Tank':   ['Paladin','Warrior','DarkKnight','Gunbreaker'],
+  'Healer': ['WhiteMage','Scholar','Astrologian','Sage'],
+  'Melee':  ['Ninja','Monk','Reaper','Dragoon','Samurai','Viper'],
+  'Range':  ['Bard','Dancer','Machinist'],
+  'Cast':   ['BlackMage','Pictomancer','Summoner','RedMage'],
+};
+
+const ROLE_COLORS = {
+  'Tank':   '#A8D2E6',
+  'Healer': '#FFF0DC',
+  'Melee':  '#D69C00',
+  'Range':  '#91BA5E',
+  'Cast':   '#A579D6',
+};
+
 const JOB_COLORS = {
   Astrologian:'#FFE74A', Bard:'#91BA5E', BlackMage:'#A579D6',
   BlueMage:'#B38BFF',   Dancer:'#E2B0AF', DarkKnight:'#D126CC',
@@ -160,6 +193,7 @@ const JOB_ORDER = [
 
 let currentBoss = 0;
 let currentJob  = 'Astrologian';
+let currentRole = null;          // null = job mode, string = role group mode
 let bestData    = null;
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -179,12 +213,44 @@ let bestData    = null;
     const res = await fetch('data_best.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     bestData = await res.json();
+    buildRolePills();
     buildJobPills();
     render();
   } catch(e) {
     showError(`無法載入資料：${e.message}`);
   }
 })();
+
+// ── Role pills ────────────────────────────────────────────────────────────────
+function buildRolePills() {
+  const pills = document.getElementById('rolePills');
+  pills.innerHTML = '';
+  Object.keys(ROLE_GROUPS).forEach(role => {
+    const color = ROLE_COLORS[role] || '#aaa';
+    const pill  = document.createElement('button');
+    pill.className = 'role-pill' + (role === currentRole ? ' active' : '');
+    pill.textContent = role;
+    pill.style.color = color;
+    if (role === currentRole) pill.style.borderColor = color;
+    pill.onclick = () => selectRole(role);
+    pills.appendChild(pill);
+  });
+}
+
+function selectRole(role) {
+  currentRole = role;
+  currentJob  = null;
+  document.querySelectorAll('.role-pill').forEach(p => {
+    const active = p.textContent === role;
+    p.classList.toggle('active', active);
+    p.style.borderColor = active ? (ROLE_COLORS[role] || '#aaa') : '';
+  });
+  document.querySelectorAll('.job-pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.borderColor = 'transparent';
+  });
+  render();
+}
 
 // ── Job pills ─────────────────────────────────────────────────────────────────
 function buildJobPills() {
@@ -212,7 +278,12 @@ function buildJobPills() {
 }
 
 function selectJob(job) {
-  currentJob = job;
+  currentJob  = job;
+  currentRole = null;
+  document.querySelectorAll('.role-pill').forEach(p => {
+    p.classList.remove('active');
+    p.style.borderColor = '';
+  });
   document.querySelectorAll('.job-pill').forEach(p => {
     const active = p.textContent === job;
     p.classList.toggle('active', active);
@@ -231,8 +302,57 @@ function selectBoss(i) {
 function render() {
   if (!bestData) return;
 
-  const boss  = BOSSES[currentBoss];
-  const all   = bestData.bosses[boss] || [];
+  const boss = BOSSES[currentBoss];
+  const all  = bestData.bosses[boss] || [];
+
+  // ── Role group mode ──────────────────────────────────────────────────────
+  if (currentRole) {
+    const jobs    = new Set(ROLE_GROUPS[currentRole] || []);
+    const color   = ROLE_COLORS[currentRole] || '#aaa';
+    // collect all players whose job belongs to this role, sorted by rDPS desc
+    const matched = all
+      .filter(r => jobs.has(r['職業']))
+      .slice()
+      .sort((a, b) => parseFloat(b['rDPS']) - parseFloat(a['rDPS']));
+
+    document.getElementById('toolbarRight').textContent =
+      `更新：${bestData.updated}　共 ${matched.length} 位玩家`;
+
+    if (!matched.length) {
+      document.getElementById('tableWrap').innerHTML =
+        '<div class="status-box">此職業組合在這個副本暫無資料</div>';
+      return;
+    }
+
+    const rowsHtml = matched.map((r, idx) => {
+      const rk    = idx + 1;
+      const badge = `<span class="rank-badge${rk===1?' r1':rk===2?' r2':rk===3?' r3':''}">#${rk}</span>`;
+      const jc    = JOB_COLORS[r['職業']] || '#aaa';
+      return `<tr>
+        <td>${badge}</td>
+        <td style="color:${jc};font-weight:500">${esc(r['玩家名稱'])}</td>
+        <td class="dim">${esc(r['職業'])}</td>
+        <td class="num">${fmt(r['DPS'])}</td>
+        <td class="num rdps">${fmt(r['rDPS'])}</td>
+        <td class="num">${fmt(r['aDPS'])}</td>
+        <td class="dim">${r['戰鬥時長(秒)']}s</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('tableWrap').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>排名</th>
+          <th style="color:${color}">玩家名稱</th>
+          <th>職業</th>
+          <th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>`;
+    return;
+  }
+
+  // ── Single job mode ──────────────────────────────────────────────────────
   const rows  = all.filter(r => r['職業'] === currentJob);
   const color = JOB_COLORS[currentJob] || '#aaa';
 
