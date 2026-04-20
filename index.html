@@ -105,6 +105,15 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .err { color: #e87b7b; }
 
+    .refresh-btn {
+      width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border);
+      background: rgba(255,255,255,.06); color: var(--text-dim);
+      font-size: 1.1rem; cursor: pointer; transition: all .2s;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .refresh-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .refresh-btn.spinning { animation: spin .7s linear infinite; color: var(--gold); }
+
     footer { text-align: center; padding: 20px; font-size: .75rem; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 20px; }
     footer a { color: var(--gold-dim); }
   </style>
@@ -116,8 +125,11 @@
     <h1>⚔ FFLogs 繁中服 Savage 排名</h1>
     <p>Arcadion (AAC Light-Heavyweight) · Zone 62 · 僅含TC伺服器擊殺紀錄</p>
   </div>
-  <!-- 將 href 換成你的 Donate 連結 -->
-  <a class="donate-btn" href="#" target="_blank" rel="noopener">❤ Donate</a>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="重新載入最新資料">↻</button>
+    <!-- 將 href 換成你的 Donate 連結 -->
+    <a class="donate-btn" href="#" target="_blank" rel="noopener">❤ Donate</a>
+  </div>
 </header>
 
 <div class="boss-tabs" id="bossTabs"></div>
@@ -209,8 +221,12 @@ let bestData    = null;
   });
 
   // Load data
+  await loadData();
+}
+
+async function loadData() {
   try {
-    const res = await fetch('data_best.json');
+    const res = await fetch(`data_best.json?t=${Date.now()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     bestData = await res.json();
     buildRolePills();
@@ -219,6 +235,17 @@ let bestData    = null;
   } catch(e) {
     showError(`無法載入資料：${e.message}`);
   }
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  document.getElementById('toolbarRight').textContent = '重新載入中...';
+  await loadData();
+  btn.classList.remove('spinning');
+  btn.disabled = false;
+}
 })();
 
 // ── Role pills ────────────────────────────────────────────────────────────────
