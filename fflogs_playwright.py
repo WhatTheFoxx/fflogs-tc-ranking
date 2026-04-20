@@ -635,5 +635,93 @@ def run():
     print("=" * 60)
 
 
+# ─── 單一 Report 模式 ────────────────────────────────────────────────────────
+
+def run_single(url_or_code: str):
+    """
+    直接指定一個 Report URL 或 code，從 Step2 開始處理。
+    不受快取影響——強制重新抓取並更新 Best。
+    用法: python fflogs_playwright.py https://www.fflogs.com/reports/XXXXX
+          python fflogs_playwright.py XXXXX
+    """
+    m = re.search(r"/reports/([A-Za-z0-9]+)", url_or_code)
+    code = m.group(1) if m else url_or_code.strip()
+    if not re.fullmatch(r"[A-Za-z0-9]+", code):
+        print(f"無效的 Report code 或 URL：{url_or_code}")
+        return
+
+    print("=" * 60)
+    print(f"FFLogs 單一 Report 模式")
+    print(f"執行時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"目標 Report: {code}")
+    print("=" * 60)
+
+    with sync_playwright() as pw:
+        browser, ctx = make_browser(pw)
+        page = ctx.new_page()
+
+        # ── Step2: 取得 Kill fights（不用快取，強制抓取）──
+        print(f"\n[1/2] 掃描 Report Kill fights...")
+        cache = load_cache()
+        try:
+            # upload_time 傳空字串，確保不會命中快取
+            kills, _ = get_savage_kills(page, code, "", cache)
+            print(f"  找到 {len(kills)} 場 Savage Kill")
+        except Exception as e:
+            print(f"  [錯誤] {e}")
+            browser.close()
+            return
+
+        if not kills:
+            print("  此 Report 無符合條件的 Savage Kill。")
+            browser.close()
+            return
+
+        # ── Step3: 抓取傷害表格 ──
+        print(f"\n[2/2] 抓取傷害資料...")
+        all_rows = []
+        skipped_fights = 0
+        for idx, fight in enumerate(kills, 1):
+            boss = TARGET_BOSSES[fight["name"]]
+            print(f"  [{idx}/{len(kills)}] {boss} — Fight {fight['id']}", end=" ")
+            try:
+                rows = parse_damage_table(page, code, fight)
+                rows = [r for r in rows if r["rDPS"] > 0]
+                if not is_tc_fight(rows):
+                    print(f"→ [略過] 疑似非TC服")
+                    skipped_fights += 1
+                else:
+                    all_rows.extend(rows)
+                    print(f"→ {len(rows)} 位玩家")
+            except Exception as e:
+                print(f"→ [錯誤] {e}")
+            time.sleep(FIGHT_DELAY)
+
+        browser.close()
+
+    print(f"\n  略過非TC服場次: {skipped_fights} 場")
+    if not all_rows:
+        print("未取得任何有效玩家資料。")
+        return
+
+    df = pd.DataFrame(all_rows)
+
+    # ── 與累積最佳比對更新 ──
+    print("\n[更新] RankingBest.xlsx...")
+    update_best_file(df)
+
+    # ── 輸出 JSON 並推送 ──
+    print("\n[JSON] 匯出網站資料...")
+    export_json()
+    print("\n[Git] 推送至 GitHub Pages...")
+    git_push()
+
+    print(f"\n完成！共處理 {len(all_rows)} 筆資料")
+    print("=" * 60)
+
+
 if __name__ == "__main__":
-    run()
+    if len(sys.argv) > 1:
+        run_single(sys.argv[1])
+    else:
+        run()
