@@ -224,9 +224,10 @@ let bestData    = null;
   await loadData();
 }
 
-async function loadData() {
+async function loadData(bustCache = false) {
+  const url = bustCache ? `data_best.json?t=${Date.now()}` : 'data_best.json';
   try {
-    const res = await fetch(`data_best.json?t=${Date.now()}`);
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     bestData = await res.json();
     buildRolePills();
@@ -242,7 +243,7 @@ async function refreshData() {
   btn.classList.add('spinning');
   btn.disabled = true;
   document.getElementById('toolbarRight').textContent = '重新載入中...';
-  await loadData();
+  await loadData(true);   // 只有手動 refresh 才 bypass cache
   btn.classList.remove('spinning');
   btn.disabled = false;
 }
