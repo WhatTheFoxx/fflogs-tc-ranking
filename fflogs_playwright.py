@@ -3,6 +3,7 @@ FFLogs 繁中服 Savage 排名抓取器 v4 (Playwright)
 用瀏覽器自動化抓取，繞過 Cloudflare 限制
 """
 
+import os
 import sys
 import time
 import re
@@ -451,52 +452,32 @@ def update_best_file(df_today: pd.DataFrame) -> None:
 
 # ─── JSON 匯出 & Git 推送 ────────────────────────────────────────────────────
 
-def export_json(df_today: pd.DataFrame) -> None:
+def export_json() -> None:
     """
-    輸出兩個 JSON 供網站讀取：
-    data_best.json — 每人最高 rDPS，同職業排名
-    data_all.json  — 全場次資料，依 DPS 排序
+    從 RankingBest.xlsx 讀取累積最佳資料，輸出 data_best.json 供網站讀取。
+    這樣不論當次跑了多少新 Report，JSON 永遠反映完整累積排名。
     """
     updated = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    def df_to_records(d: pd.DataFrame) -> list[dict]:
-        return json.loads(d.to_json(orient="records", force_ascii=False))
+    try:
+        xl = pd.read_excel(BEST_FILE, sheet_name=None)
+    except FileNotFoundError:
+        print("  RankingBest.xlsx 不存在，無法匯出 JSON")
+        return
 
     best_data: dict[str, list] = {}
-    all_data:  dict[str, list] = {}
-
-    for display_name in TARGET_BOSSES.values():
-        boss_df = df_today[df_today["副本"] == display_name].copy()
-        if boss_df.empty:
+    for display_name, sheet_name in BEST_BOSS_SHEETS.items():
+        if sheet_name not in xl:
             best_data[display_name] = []
-            all_data[display_name]  = []
             continue
-
-        # all: DPS 排序，移除 Report/FightID
-        all_ranked = boss_df.sort_values("DPS", ascending=False).reset_index(drop=True)
-        all_ranked.insert(0, "排名", range(1, len(all_ranked) + 1))
-        all_ranked = all_ranked.drop(columns=["Report", "FightID"], errors="ignore")
-        all_data[display_name] = df_to_records(all_ranked)
-
-        # best: 每人最高 rDPS，同職業排名
-        best = (
-            boss_df
-            .sort_values("rDPS", ascending=False)
-            .drop_duplicates(subset="玩家名稱", keep="first")
-            .copy()
-        )
-        best = best.sort_values(["職業", "rDPS"], ascending=[True, False])
-        best["同職業排名"] = best.groupby("職業").cumcount() + 1
-        best = best.sort_values(["職業", "同職業排名"]).reset_index(drop=True)
-        best = best.drop(columns=["Report", "FightID"], errors="ignore")
-        best_data[display_name] = df_to_records(best)
+        df = xl[sheet_name].copy()
+        df = df.drop(columns=["Report", "FightID"], errors="ignore")
+        best_data[display_name] = json.loads(df.to_json(orient="records", force_ascii=False))
 
     with open(JSON_BEST, "w", encoding="utf-8") as f:
         json.dump({"updated": updated, "bosses": best_data}, f, ensure_ascii=False, indent=2)
-    with open(JSON_ALL, "w", encoding="utf-8") as f:
-        json.dump({"updated": updated, "bosses": all_data},  f, ensure_ascii=False, indent=2)
 
-    print(f"  JSON 輸出: data_best.json / data_all.json")
+    print(f"  JSON 輸出: data_best.json")
 
 
 def git_push() -> None:
@@ -541,32 +522,12 @@ def run():
             browser.close()
             return
 
-        # ── 步驟2: 掃描 Savage Kill fights（含快取）──
+        # ── 步驟2: 篩出未快取的新 Report，掃描 Savage Kill fights ──
         print("[2/3] 掃描各 Report 的 Savage Kill...")
         cache = load_cache()
 
         # 本次查到的 Report code 集合，用於清理失效快取
         current_codes = {r["code"] for r in reports}
-
-        kill_list: list[tuple[str, dict]] = []
-        cache_hits = 0
-        for idx, report in enumerate(reports, 1):
-            code        = report["code"]
-            upload_time = report["upload_time"]
-            print(f"  [{idx}/{len(reports)}] {code}", end=" ")
-            from_cache = False          # 保證變數在 except 時仍已定義
-            try:
-                kills, from_cache = get_savage_kills(page, code, upload_time, cache)
-                tag = "[快取]" if from_cache else f"→ {len(kills)} kill(s)"
-                print(tag)
-                if from_cache:
-                    cache_hits += 1
-                for k in kills:
-                    kill_list.append((code, k))
-            except Exception as e:
-                print(f"→ [錯誤] {e}")
-            if not from_cache:
-                time.sleep(PAGE_DELAY)
 
         # 移除本次未查到的舊快取（Report 已從 zone 頁面消失）
         stale = [c for c in list(cache) if c not in current_codes]
@@ -575,17 +536,44 @@ def run():
                 del cache[c]
             print(f"  清理失效快取: {len(stale)} 筆 ({', '.join(stale[:5])}{'...' if len(stale)>5 else ''})")
 
-        save_cache(cache)
-        print(f"\n  快取命中: {cache_hits}/{len(reports)}，共找到 {len(kill_list)} 場 Savage Kill\n")
+        # 只處理 upload_time 有變動或從未抓過的 Report
+        new_reports = [
+            r for r in reports
+            if not (cache.get(r["code"]) and r["upload_time"]
+                    and cache[r["code"]].get("upload_time") == r["upload_time"])
+        ]
+        cache_hits = len(reports) - len(new_reports)
+        print(f"  快取命中（略過）: {cache_hits}/{len(reports)}，需抓取: {len(new_reports)} 個 Report")
 
-        print(f"\n  共找到 {len(kill_list)} 場 Savage Kill\n")
+        kill_list: list[tuple[str, dict]] = []
+        for idx, report in enumerate(new_reports, 1):
+            code        = report["code"]
+            upload_time = report["upload_time"]
+            print(f"  [{idx}/{len(new_reports)}] {code}", end=" ")
+            try:
+                kills, _ = get_savage_kills(page, code, upload_time, cache)
+                print(f"→ {len(kills)} kill(s)")
+                for k in kills:
+                    kill_list.append((code, k))
+            except Exception as e:
+                print(f"→ [錯誤] {e}")
+            time.sleep(PAGE_DELAY)
+
+        save_cache(cache)
+        print(f"\n  共找到 {len(kill_list)} 場新 Savage Kill\n")
 
         if not kill_list:
-            print("  未找到任何 Savage Kill。")
+            print("  無新資料需要處理。")
             browser.close()
+            # 若已有 Best 資料，仍可輸出 JSON 並推送
+            if os.path.exists(BEST_FILE):
+                print("\n[JSON] 匯出網站資料（無新增）...")
+                export_json()
+                print("\n[Git] 推送至 GitHub Pages...")
+                git_push()
             return
 
-        # ── 步驟3: 抓取傷害表格（含TC服場次過濾）──
+        # ── 步驟3: 抓取新 Kill 的傷害表格（含TC服場次過濾）──
         print("[3/3] 抓取各場 Kill 的傷害資料...")
         all_rows = []
         skipped_fights = 0
@@ -594,7 +582,6 @@ def run():
             print(f"  [{idx}/{len(kill_list)}] {boss} — {code} Fight {fight['id']}", end=" ")
             try:
                 rows = parse_damage_table(page, code, fight)
-                # 移除 rDPS=0 的無效列
                 rows = [r for r in rows if r["rDPS"] > 0]
                 if not is_tc_fight(rows):
                     print(f"→ [略過] 疑似非TC服")
@@ -615,37 +602,35 @@ def run():
 
     df = pd.DataFrame(all_rows)
 
-    # ── 輸出 Excel ──
+    # ── 輸出今日新增資料的 Excel（供查閱）──
     print(f"\n[輸出] 產生 Excel...")
     timestamp   = datetime.now().strftime("%Y%m%d_%H%M")
     output_path = f"D:/FF_LOG排名/rankings_pw_{timestamp}.xlsx"
 
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         df.to_excel(writer, sheet_name="全部資料", index=False)
-
         for display_name in TARGET_BOSSES.values():
             boss_df = df[df["副本"] == display_name].copy()
             if boss_df.empty:
                 continue
-            short = display_name.replace(" Savage", "").replace(".", "")
-            ranked = boss_df.sort_values("DPS", ascending=False).reset_index(drop=True)
+            short   = display_name.replace(" Savage", "").replace(".", "")
+            ranked  = boss_df.sort_values("DPS", ascending=False).reset_index(drop=True)
             ranked.insert(0, "排名", range(1, len(ranked) + 1))
             ranked.to_excel(writer, sheet_name=short[:31], index=False)
+    print(f"  今日新增資料輸出: {output_path}")
 
-    print(f"  今日資料輸出: {output_path}")
-
-    # ── 更新累積最佳排名 ──
+    # ── 與累積最佳比對更新 ──
     print("\n[更新] RankingBest.xlsx...")
     update_best_file(df)
 
-    # ── 輸出 JSON 並推送到 GitHub ──
+    # ── 從 RankingBest 輸出完整 JSON 並推送到 GitHub ──
     print("\n[JSON] 匯出網站資料...")
-    export_json(df)
+    export_json()
     print("\n[Git] 推送至 GitHub Pages...")
     git_push()
 
     print(f"\n完成！")
-    print(f"  今日資料: {len(df)} 筆 / {len(kill_list)} 場 Kill")
+    print(f"  今日新增: {len(df)} 筆 / {len(kill_list)} 場 Kill")
     print(f"  最佳排名: {BEST_FILE}")
     print("=" * 60)
 
