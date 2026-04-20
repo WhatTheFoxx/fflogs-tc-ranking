@@ -222,7 +222,7 @@ let bestData    = null;
 
   // Load data
   await loadData();
-}
+})();
 
 async function loadData(bustCache = false) {
   const url = bustCache ? `data_best.json?t=${Date.now()}` : 'data_best.json';
