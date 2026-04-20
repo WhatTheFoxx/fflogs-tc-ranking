@@ -15,6 +15,13 @@ scraper.log
 # 本地快取（依機器不同，不上傳）
 report_cache.json
 
+# 抓取程式與說明（本地用途，不公開）
+fflogs_playwright.py
+CLAUDE.md
+
+# 備用資料（網站未使用）
+data_all.json
+
 # 系統檔
 .DS_Store
 Thumbs.db
