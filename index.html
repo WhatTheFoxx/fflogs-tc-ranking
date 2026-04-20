@@ -112,8 +112,23 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .err { color: #e87b7b; }
 
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      padding: 16px 24px; border-top: 1px solid var(--border);
+    }
+    .page-btn {
+      padding: 6px 18px; border-radius: 20px; border: 1px solid var(--border);
+      background: rgba(255,255,255,.04); color: var(--text-dim);
+      cursor: pointer; font-size: .82rem; transition: all .15s;
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--gold-dim); color: var(--gold); }
+    .page-btn:disabled { opacity: .3; cursor: default; }
+    .page-info { font-size: .8rem; color: var(--text-dim); }
+
     footer { text-align: center; padding: 20px; font-size: .75rem; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 20px; }
     footer a { color: var(--gold-dim); }
+    .footer-note { margin-top: 8px; font-size: .72rem; color: var(--text-dim); opacity: .7; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -149,6 +164,10 @@
 <footer>
   資料來源：<a href="https://www.fflogs.com" target="_blank" rel="noopener">FFLogs</a>
   &nbsp;·&nbsp; 僅供參考，非官方排名
+  <div class="footer-note">
+    本網站排名以 rDPS 為準，每位玩家的每個職業只取最佳表現顯示。<br>
+    本網站不會加入 Logs Report 的連結，以避免玩家之間不必要的糾紛。
+  </div>
 </footer>
 
 <script>
@@ -204,6 +223,8 @@ const JOB_ORDER = [
 let currentBoss = 0;
 let currentJob  = 'Astrologian';
 let currentRole = null;          // null = job mode, string = role group mode
+let currentPage = 1;
+const PAGE_SIZE = 100;
 let bestData    = null;
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -250,6 +271,7 @@ function buildRolePills() {
 function selectRole(role) {
   currentRole = role;
   currentJob  = null;
+  currentPage = 1;
   document.querySelectorAll('.role-pill').forEach(p => {
     const active = p.textContent === role;
     p.classList.toggle('active', active);
@@ -290,6 +312,7 @@ function buildJobPills() {
 function selectJob(job) {
   currentJob  = job;
   currentRole = null;
+  currentPage = 1;
   document.querySelectorAll('.role-pill').forEach(p => {
     p.classList.remove('active');
     p.style.borderColor = '';
@@ -304,11 +327,40 @@ function selectJob(job) {
 
 function selectBoss(i) {
   currentBoss = i;
+  currentPage = 1;
   document.querySelectorAll('.boss-tab').forEach((t, j) => t.classList.toggle('active', i === j));
   render();
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
+function renderTable(allRows, columns, headerHtml) {
+  const total      = allRows.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  currentPage      = Math.min(Math.max(currentPage, 1), totalPages || 1);
+  const start      = (currentPage - 1) * PAGE_SIZE;
+  const pageRows   = allRows.slice(start, start + PAGE_SIZE);
+
+  const pagination = total > PAGE_SIZE ? `
+    <div class="pagination">
+      <button class="page-btn" onclick="changePage(-1)" ${currentPage===1?'disabled':''}>← 上一頁</button>
+      <span class="page-info">第 ${currentPage} / ${totalPages} 頁　（共 ${total} 位）</span>
+      <button class="page-btn" onclick="changePage(1)" ${currentPage===totalPages?'disabled':''}>下一頁 →</button>
+    </div>` : '';
+
+  document.getElementById('tableWrap').innerHTML = `
+    <table>
+      <thead><tr>${headerHtml}</tr></thead>
+      <tbody>${pageRows.map(columns).join('')}</tbody>
+    </table>
+    ${pagination}`;
+}
+
+function changePage(dir) {
+  currentPage += dir;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function render() {
   if (!bestData) return;
 
@@ -319,7 +371,6 @@ function render() {
   if (currentRole) {
     const jobs    = new Set(ROLE_GROUPS[currentRole] || []);
     const color   = ROLE_COLORS[currentRole] || '#aaa';
-    // collect all players whose job belongs to this role, sorted by rDPS desc
     const matched = all
       .filter(r => jobs.has(r['職業']))
       .slice()
@@ -334,31 +385,24 @@ function render() {
       return;
     }
 
-    const rowsHtml = matched.map((r, idx) => {
-      const rk    = idx + 1;
-      const badge = `<span class="rank-badge${rk===1?' r1':rk===2?' r2':rk===3?' r3':''}">#${rk}</span>`;
-      const jc    = JOB_COLORS[r['職業']] || '#aaa';
-      return `<tr>
-        <td>${badge}</td>
-        <td style="color:${jc};font-weight:500">${esc(r['玩家名稱'])}</td>
-        <td class="dim">${esc(r['職業'])}</td>
-        <td class="num">${fmt(r['DPS'])}</td>
-        <td class="num rdps">${fmt(r['rDPS'])}</td>
-        <td class="num">${fmt(r['aDPS'])}</td>
-        <td class="dim">${r['戰鬥時長(秒)']}s</td>
-      </tr>`;
-    }).join('');
-
-    document.getElementById('tableWrap').innerHTML = `
-      <table>
-        <thead><tr>
-          <th>排名</th>
-          <th style="color:${color}">玩家名稱</th>
-          <th>職業</th>
-          <th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>
-        </tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>`;
+    renderTable(
+      matched,
+      (r, idx) => {
+        const rk    = (currentPage - 1) * PAGE_SIZE + idx + 1;
+        const badge = `<span class="rank-badge${rk===1?' r1':rk===2?' r2':rk===3?' r3':''}">#${rk}</span>`;
+        const jc    = JOB_COLORS[r['職業']] || '#aaa';
+        return `<tr>
+          <td>${badge}</td>
+          <td style="color:${jc};font-weight:500">${esc(r['玩家名稱'])}</td>
+          <td class="dim">${esc(r['職業'])}</td>
+          <td class="num">${fmt(r['DPS'])}</td>
+          <td class="num rdps">${fmt(r['rDPS'])}</td>
+          <td class="num">${fmt(r['aDPS'])}</td>
+          <td class="dim">${r['戰鬥時長(秒)']}s</td>
+        </tr>`;
+      },
+      `<th>排名</th><th style="color:${color}">玩家名稱</th><th>職業</th><th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>`
+    );
     return;
   }
 
@@ -375,28 +419,22 @@ function render() {
     return;
   }
 
-  const rowsHtml = rows.map(r => {
-    const rk = +r['同職業排名'];
-    const badge = `<span class="rank-badge${rk===1?' r1':rk===2?' r2':rk===3?' r3':''}">#${rk}</span>`;
-    return `<tr>
-      <td>${badge}</td>
-      <td style="color:${color};font-weight:500">${esc(r['玩家名稱'])}</td>
-      <td class="num">${fmt(r['DPS'])}</td>
-      <td class="num rdps">${fmt(r['rDPS'])}</td>
-      <td class="num">${fmt(r['aDPS'])}</td>
-      <td class="dim">${r['戰鬥時長(秒)']}s</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('tableWrap').innerHTML = `
-    <table>
-      <thead><tr>
-        <th>排名</th>
-        <th style="color:${color}">玩家名稱</th>
-        <th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>
-      </tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>`;
+  renderTable(
+    rows,
+    (r, idx) => {
+      const rk    = (currentPage - 1) * PAGE_SIZE + idx + 1;
+      const badge = `<span class="rank-badge${rk===1?' r1':rk===2?' r2':rk===3?' r3':''}">#${rk}</span>`;
+      return `<tr>
+        <td>${badge}</td>
+        <td style="color:${color};font-weight:500">${esc(r['玩家名稱'])}</td>
+        <td class="num">${fmt(r['DPS'])}</td>
+        <td class="num rdps">${fmt(r['rDPS'])}</td>
+        <td class="num">${fmt(r['aDPS'])}</td>
+        <td class="dim">${r['戰鬥時長(秒)']}s</td>
+      </tr>`;
+    },
+    `<th>排名</th><th style="color:${color}">玩家名稱</th><th>DPS</th><th>rDPS</th><th>aDPS</th><th>時長</th>`
+  );
 }
 
 // ── Refresh ───────────────────────────────────────────────────────────────────
