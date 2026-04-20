@@ -306,14 +306,27 @@ def parse_damage_table(page, code: str, fight: dict) -> list[dict]:
     duration = (fight["end_time"] - fight["start_time"]) / 1000.0
 
     url = f"{BASE_URL}/reports/{code}#fight={fid}&type=damage-done"
-    page.goto(url, wait_until="domcontentloaded", timeout=30000)
-    wait_cf(page)
 
-    try:
-        page.wait_for_selector("table.summary-table.report.dataTable", timeout=20000)
-    except PWTimeout:
-        print(f"    [警告] 傷害表格未出現 ({code} fight={fid})")
-        return []
+    # 若目前已在同一個 report 頁面（hash navigation），先跳離再回來
+    # 避免 SPA 不重新渲染表格
+    current = page.url
+    if f"/reports/{code}" in current:
+        page.goto(BASE_URL, wait_until="domcontentloaded", timeout=15000)
+
+    # 最多重試 2 次
+    for attempt in range(2):
+        page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        wait_cf(page)
+        try:
+            page.wait_for_selector("table.summary-table.report.dataTable", timeout=25000)
+            break  # 成功
+        except PWTimeout:
+            if attempt == 0:
+                print(f"    [重試]", end=" ")
+                time.sleep(3)
+            else:
+                print(f"    [警告] 傷害表格未出現 ({code} fight={fid})")
+                return []
 
     rows = []
     trs = page.query_selector_all("table.summary-table.report.dataTable tr")
