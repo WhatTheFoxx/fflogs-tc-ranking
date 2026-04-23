@@ -17,7 +17,20 @@ report_cache.json
 
 # 抓取程式與說明（本地用途，不公開）
 fflogs_playwright.py
+fflogs_api.py
 CLAUDE.md
+
+# 臨時補抓腳本
+rebuild_best.py
+rescan_chinese.py
+
+# API 補抓快取與執行 log
+api_cache.json
+fflogs_api_*.log
+rescan_chinese.log
+
+# 探索用測試腳本
+test_*.py
 
 # 備用資料（網站未使用）
 data_all.json
